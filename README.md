@@ -1,1 +1,54 @@
-# Assignment5.1
+tVDRIVE
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.*;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+public class Tvdrive
+{	@SuppressWarnings("deprecation")
+	public static void main(String[] args)throws Exception{
+		Configuration conf=new Configuration();
+		Job job=new Job(conf,"Tv sales");
+		job.setJarByClass(Tvdrive.class);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		Path outputPath =new Path(args[1]);
+		FileOutputFormat.setOutputPath(job, outputPath);
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		job.setMapperClass(Tvmap.class);
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setMapOutputKeyClass(NullWritable.class);
+		job.setMapOutputValueClass(Text.class);
+		job.setOutputKeyClass(NullWritable.class);
+		job.setOutputValueClass(Text.class);
+		job.waitForCompletion(true);
+}}
+
+
+TV MAP
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.*;
+
+public class Tvmap extends Mapper<LongWritable, Text,NullWritable,Text>{
+	
+public void map(LongWritable key, Text value, Context context)
+		throws IOException, InterruptedException{
+	String[] lineArray =value.toString().split("\\|");
+	if((lineArray.length > 1)&&(!lineArray[0].equalsIgnoreCase("NA"))
+			&&(!lineArray[1].equalsIgnoreCase("NA")))
+	{
+       context.write(NullWritable.get(),value);
+	}
+}
+}
